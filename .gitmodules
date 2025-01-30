@@ -1,0 +1,3 @@
+[submodule "MemoryModule.ahk"]
+	path = MemoryModule.ahk
+	url = https://github.com/G33kDude/MemoryModule.ahk.git

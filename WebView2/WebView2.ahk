@@ -38,8 +38,6 @@ class WebView2 {
 	 * @returns {Promise<WebView2.Environment>}
 	 */
 	static CreateEnvironmentAsync(options := 0, dataDir := '', edgeRuntime := '', dllPath := 'WebView2Loader.dll') {
-		if !FileExist(dllPath) && FileExist(t := A_LineFile '\..\' (A_PtrSize * 8) 'bit\WebView2Loader.dll')
-			dllPath := t
 		if !edgeRuntime {
 			ver := '0.0.0.0'
 			for root in [EnvGet('ProgramFiles(x86)'), A_AppData '\..\Local']
@@ -52,7 +50,9 @@ class WebView2 {
 				options.TargetCompatibleBrowserVersion := ver
 			options := this.EnvironmentOptions(options)
 		}
-		DllCall(dllPath '\CreateCoreWebView2EnvironmentWithOptions', 'str', edgeRuntime,
+		hModule := MemoryModule.LoadLibrary(%'WebView2Loader' A_PtrSize*8%())
+		fnCreate := MemoryModule.GetProcAddress(hModule, "CreateCoreWebView2EnvironmentWithOptions")
+		DllCall(fnCreate, 'str', edgeRuntime,
 			'str', dataDir || RegExReplace(A_AppData, 'Roaming$', 'Local\Microsoft\Edge\User Data'), 'ptr', options,
 			'ptr', this.AsyncHandler(&p, this.Environment), 'hresult')
 		return p
@@ -2237,3 +2237,6 @@ CoTaskMem_String(ptr) {
 }
 #Include ..\ComVar.ahk
 #Include ..\Promise.ahk
+#Include ..\MemoryModule.ahk\MemoryModule.ahk
+#Include *i WebView2Loader32.ahk
+#Include *i WebView2Loader64.ahk
